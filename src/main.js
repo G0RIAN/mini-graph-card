@@ -144,7 +144,7 @@ class MiniGraphCard extends LitElement {
     if (!this.entity[0]) return false;
     if (UPDATE_PROPS.some(prop => changedProps.has(prop))) {
       this.color = this.intColor(
-        this.tooltip.value !== undefined ? this.tooltip.value : this.entity[0].state,
+        this.tooltip.value !== undefined ? this.tooltip.value : this.entity[0].attributes.forecast[0].precipitation,
         this.tooltip.entity || 0,
       );
       return true;
@@ -226,7 +226,7 @@ class MiniGraphCard extends LitElement {
 
   renderStates() {
     const { entity, value } = this.tooltip;
-    const state = value !== undefined ? value : this.entity[0].state;
+    const state = value !== undefined ? value : this.entity[0].attributes.forecast[0].precipitation;
     const color = this.config.entities[0].state_adaptive_color ? `color: ${this.color};` : '';
     if (this.config.show.state)
       return html`
@@ -301,9 +301,9 @@ class MiniGraphCard extends LitElement {
         ${this.visibleLegends.map(entity => html`
           <div class="graph__legend__item"
             @click=${e => this.handlePopup(e, this.entity[entity.index])}
-            @mouseenter=${() => this.setTooltip(entity.index, -1, this.entity[entity.index].state, 'Current')}
+            @mouseenter=${() => this.setTooltip(entity.index, -1, this.entity[entity.index].attributes.forecast[0].precipitation, 'Current')}
             @mouseleave=${() => (this.tooltip = {})}>
-            ${this.renderIndicator(this.entity[entity.index].state, entity.index)}
+            ${this.renderIndicator(this.entity[entity.index].attributes.forecast[0].precipitation, entity.index)}
             <span class="ellipsis">${this.computeName(entity.index)}</span>
           </div>
         `)}
@@ -386,7 +386,7 @@ class MiniGraphCard extends LitElement {
 
   renderSvgPoints(points, i) {
     if (!points) return;
-    const color = this.computeColor(this.entity[i].state, i);
+    const color = this.computeColor(this.entity[i].attributes.forecast[0].precipitation, i);
     return svg`
       <g class='line--points'
         ?tooltip=${this.tooltip.entity === i}
@@ -419,7 +419,7 @@ class MiniGraphCard extends LitElement {
     if (!line) return;
     const fill = this.gradient[i]
       ? `url(#grad-${this.id}-${i})`
-      : this.computeColor(this.entity[i].state, i);
+      : this.computeColor(this.entity[i].attributes.forecast[0].precipitation, i);
     return svg`
       <rect class='line--rect'
         ?inactive=${this.tooltip.entity !== undefined && this.tooltip.entity !== i}
@@ -433,7 +433,7 @@ class MiniGraphCard extends LitElement {
     if (!fill) return;
     const svgFill = this.gradient[i]
       ? `url(#grad-${this.id}-${i})`
-      : this.intColor(this.entity[i].state, i);
+      : this.intColor(this.entity[i].attributes.forecast[0].precipitation, i);
     return svg`
       <rect class='fill--rect'
         ?inactive=${this.tooltip.entity !== undefined && this.tooltip.entity !== i}
@@ -540,7 +540,7 @@ class MiniGraphCard extends LitElement {
           <div class="info__item">
             <span class="info__item__type">${entry.type}</span>
             <span class="info__item__value">
-              ${this.computeState(entry.state)} ${this.computeUom(0)}
+              ${this.computeState(entry.attributes.forecast[0].precipitation)} ${this.computeUom(0)}
             </span>
             <span class="info__item__time">
               ${entry.type !== 'avg' ? getTime(new Date(entry.last_changed), this.config.format, this._hass.language) : ''}
@@ -811,10 +811,10 @@ class MiniGraphCard extends LitElement {
         newStateHistory[0].forEach(item => this._convertState(item));
       }
 
-      newStateHistory = newStateHistory[0].filter(item => !Number.isNaN(parseFloat(item.state)));
+      newStateHistory = newStateHistory[0].filter(item => !Number.isNaN(parseFloat(item.attributes.forecast[0].precipitation)));
       newStateHistory = newStateHistory.map(item => ({
         last_changed: item.last_changed,
-        state: item.state,
+        state: item.attributes.forecast[0].precipitation,
       }));
       stateHistory = [...stateHistory, ...newStateHistory];
 
